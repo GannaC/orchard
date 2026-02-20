@@ -198,8 +198,9 @@
       <section class="hero">
         <h1>All 50 U.S. States: Population and Territory</h1>
         <p class="subtitle">
-          Interactive comparison using official U.S. Census Bureau data. Choose a metric to compare
-          states by population, land area, total area, or population density.
+          Interactive comparison using official U.S. Census Bureau TIGERweb data (2020 Census population
+          and state area fields). Choose a metric to compare states by population, land area, total area,
+          or population density.
         </p>
       </section>
 
@@ -369,133 +370,61 @@
         throw lastErr || new Error("All endpoints failed");
       }
 
-      async function loadPopulation() {
-        const candidates = [2024, 2023, 2022].map(
-          (y) => `https://api.census.gov/data/${y}/acs/acs1?get=NAME,B01003_001E&for=state:*`
+      async function loadTigerStates() {
+        const layerIds = [54, 62, 70];
+        const urls = layerIds.map(
+          (id) =>
+            `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/${id}/query` +
+            `?where=1%3D1&outFields=GEOID,NAME,AREALAND,AREAWATER,POP100&returnGeometry=false&f=json`
         );
-        const { url, data } = await fetchFirst(candidates, (res) => res.json());
-        const [headers, ...rows] = data;
-        const idxName = headers.indexOf("NAME");
-        const idxPop = headers.indexOf("B01003_001E");
-        const idxState = headers.indexOf("state");
 
-        const map = new Map();
-        for (const row of rows) {
-          const fips = row[idxState];
-          if (!STATES_50_FIPS.has(fips)) continue;
-          map.set(fips, {
-            fips,
-            name: row[idxName],
-            population: Number(row[idxPop])
-          });
-        }
-        return { url, map };
-      }
-
-      function parseTsv(text) {
-        const lines = text.trim().split(/\r?\n/);
-        const headers = lines[0].split("\t");
-        const idx = Object.fromEntries(headers.map((h, i) => [h, i]));
-        return lines.slice(1).map((line) => {
-          const cols = line.split("\t");
-          return {
-            geoid: cols[idx.GEOID],
-            name: cols[idx.NAME],
-            landArea: Number(cols[idx.ALAND_SQMI]),
-            waterArea: Number(cols[idx.AWATER_SQMI])
-          };
-        });
-      }
-
-      function stateFipsFromGeoid(geoid) {
-        const digits = geoid.replace(/\D/g, "");
-        if (digits.length >= 5) return digits.slice(-5, -3);
-        if (digits.length >= 2) return digits.slice(0, 2);
-        return "";
-      }
-
-      async function loadArea() {
-        const years = [2024, 2023, 2022];
-        const stateCodes = [...STATES_50_FIPS].sort();
-
-        let chosenYear = null;
-        const map = new Map();
-        let lastErr;
-
-        for (const year of years) {
-          try {
-            const urls = stateCodes.map(
-              (fips) =>
-                `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/${year}_Gazetteer/${year}_gaz_counties_${fips}.txt`
-            );
-            const texts = await Promise.all(
-              urls.map(async (url) => {
-                const res = await fetch(url, { cache: "no-store" });
-                if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-                return res.text();
-              })
-            );
-
-            for (const txt of texts) {
-              for (const row of parseTsv(txt)) {
-                const stateFips = stateFipsFromGeoid(row.geoid);
-                if (!STATES_50_FIPS.has(stateFips)) continue;
-                const current =
-                  map.get(stateFips) ||
-                  { fips: stateFips, name: "", landArea: 0, totalArea: 0 };
-                current.name = current.name || row.name.split(",").pop().trim();
-                current.landArea += row.landArea;
-                current.totalArea += row.landArea + row.waterArea;
-                map.set(stateFips, current);
-              }
-            }
-
-            chosenYear = year;
-            break;
-          } catch (err) {
-            map.clear();
-            lastErr = err;
-          }
-        }
-
-        if (!chosenYear) throw lastErr || new Error("No Gazetteer year could be loaded");
+        const { url, data } = await fetchFirst(urls, (res) => res.json());
+        const features = Array.isArray(data.features) ? data.features : [];
+        const sqMetersPerSqMile = 2589988.110336;
 
         return {
-          url: `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/${chosenYear}_Gazetteer/`,
-          map
+          url,
+          rows: features
+            .map((f) => f.attributes || {})
+            .filter((a) => STATES_50_FIPS.has(String(a.GEOID).padStart(2, "0")))
+            .map((a) => {
+              const landSqMi = Number(a.AREALAND) / sqMetersPerSqMile;
+              const waterSqMi = Number(a.AREAWATER) / sqMetersPerSqMile;
+              const pop = Number(a.POP100);
+              return {
+                fips: String(a.GEOID).padStart(2, "0"),
+                name: a.NAME,
+                population: pop,
+                landArea: landSqMi,
+                totalArea: landSqMi + waterSqMi,
+                density: pop / landSqMi
+              };
+            })
         };
       }
 
       async function init() {
         try {
-          const [pop, area] = await Promise.all([loadPopulation(), loadArea()]);
-          const merged = [];
+          const tiger = await loadTigerStates();
+          const filtered = tiger.rows.filter(
+            (row) =>
+              Number.isFinite(row.population) &&
+              Number.isFinite(row.landArea) &&
+              row.landArea > 0
+          );
 
-          for (const [fips, p] of pop.map.entries()) {
-            const a = area.map.get(fips);
-            if (!a || !Number.isFinite(a.landArea) || a.landArea <= 0) continue;
-            merged.push({
-              fips,
-              name: p.name,
-              population: p.population,
-              landArea: a.landArea,
-              totalArea: a.totalArea,
-              density: p.population / a.landArea
-            });
-          }
+          state.rows = filtered;
+          state.sourcePop = tiger.url;
+          state.sourceArea = tiger.url;
 
-          state.rows = merged;
-          state.sourcePop = pop.url;
-          state.sourceArea = area.url;
-
-          statusEl.textContent = `Loaded ${merged.length} states from U.S. Census Bureau datasets.`;
+          statusEl.textContent = `Loaded ${filtered.length} states from U.S. Census TIGERweb.`;
           statusEl.classList.remove("error");
-          sourcesEl.innerHTML = `Sources: <a href="${state.sourcePop}" target="_blank" rel="noreferrer">Census ACS 1-Year API (B01003_001E)</a> and <a href="${state.sourceArea}" target="_blank" rel="noreferrer">Census Gazetteer county files aggregated to states</a>.`;
+          sourcesEl.innerHTML = `Source: <a href="${state.sourcePop}" target="_blank" rel="noreferrer">U.S. Census TIGERweb State_County layer query</a> (2020 Census POP100 with AREALAND/AREAWATER).`;
           render();
         } catch (err) {
           statusEl.textContent = `Could not load Census data in this browser session. ${err.message}`;
           statusEl.classList.add("error");
-          sourcesEl.innerHTML = "Official sources intended: U.S. Census Bureau Population Estimates Program API and Census Gazetteer state areas.";
+          sourcesEl.innerHTML = "Official source intended: U.S. Census Bureau TIGERweb State_County layer.";
           console.error(err);
         }
       }
