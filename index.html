@@ -139,6 +139,21 @@
         flex: 0 0 auto;
       }
 
+      .flag-fallback {
+        width: 1.08rem;
+        height: 1.08rem;
+        border-radius: 999px;
+        border: 1px solid #d9e3f2;
+        background: #f6f8fc;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.54rem;
+        font-weight: 700;
+        color: #3f4f6e;
+        flex: 0 0 auto;
+      }
+
       .track {
         height: 1.35rem;
         border-radius: 999px;
@@ -348,7 +363,7 @@
       }
 
       function stateFlagUrl(abbr) {
-        return `https://hatscripts.github.io/circle-flags/flags/us-${abbr.toLowerCase()}.svg`;
+        return `https://flags.ox3.in/svg/us/${abbr.toLowerCase()}.svg`;
       }
 
       function getMetricValue(row) {
@@ -385,7 +400,7 @@
             const flagSrc = stateFlagUrl(row.abbr);
             return `
               <div class="row" style="--delay:${Math.min(i * 22, 440)}ms">
-                <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" />${row.name}</div>
+                <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;flag-fallback&quot; aria-label=&quot;${row.name} code&quot;>${row.abbr}</span>'" />${row.name}</div>
                 <div class="track"><div class="fill" style="--w:0%" data-target="${width.toFixed(2)}%"></div></div>
                 <div class="value">${metricLabel(row)}</div>
               </div>
