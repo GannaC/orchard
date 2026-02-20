@@ -42,6 +42,31 @@
         margin: 2rem auto 3rem;
       }
 
+      .top-banner {
+        width: min(1200px, 96vw);
+        margin: 1rem auto 0;
+        border: 1px solid #cfe0ff;
+        background: linear-gradient(95deg, #0f2f66, #1f5ebd 60%, #3d7cdd);
+        color: #fff;
+        border-radius: 14px;
+        padding: 0.7rem 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.7rem;
+        box-shadow: 0 8px 18px -14px #0f2f6680;
+      }
+
+      .banner-title {
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+
+      .banner-note {
+        font-size: 0.9rem;
+        opacity: 0.95;
+      }
+
       .hero {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -283,9 +308,34 @@
           grid-template-columns: 1.2fr 1fr;
         }
       }
+
+      @media (max-width: 760px) {
+        .top-banner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .site-footer {
+        width: min(1200px, 96vw);
+        margin: 0 auto 1.2rem;
+        padding: 0.9rem 0.2rem 0.2rem;
+        color: #4a5875;
+        font-size: 0.88rem;
+        border-top: 1px solid #d7e1f0;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.7rem;
+        flex-wrap: wrap;
+      }
     </style>
   </head>
   <body>
+    <section class="top-banner" aria-label="Project banner">
+      <div class="banner-title">U.S. States Data Dashboard</div>
+      <div class="banner-note">Official Census TIGERweb data with interactive analysis and filtering</div>
+    </section>
+
     <main class="wrap">
       <section class="hero">
         <h1>All 50 U.S. States: Population and Territory</h1>
@@ -349,6 +399,11 @@
         </article>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div>Data source: U.S. Census Bureau TIGERweb (POP100, AREALAND, AREAWATER).</div>
+      <div>Built for /Users/anna/Documents/New project</div>
+    </footer>
 
     <script>
       const STATES_50_FIPS = new Set([
