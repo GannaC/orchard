@@ -371,12 +371,12 @@
 
       async function loadPopulation() {
         const candidates = [2024, 2023, 2022].map(
-          (y) => `https://api.census.gov/data/${y}/pep/population?get=NAME,POP&for=state:*`
+          (y) => `https://api.census.gov/data/${y}/acs/acs1?get=NAME,B01003_001E&for=state:*`
         );
         const { url, data } = await fetchFirst(candidates, (res) => res.json());
         const [headers, ...rows] = data;
         const idxName = headers.indexOf("NAME");
-        const idxPop = headers.indexOf("POP");
+        const idxPop = headers.indexOf("B01003_001E");
         const idxState = headers.indexOf("state");
 
         const map = new Map();
@@ -407,23 +407,63 @@
         });
       }
 
-      async function loadArea() {
-        const candidates = [2024, 2023, 2022].map(
-          (y) => `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/${y}_Gaz_state_national.txt`
-        );
-        const { url, data } = await fetchFirst(candidates, (res) => res.text().then(parseTsv));
+      function stateFipsFromGeoid(geoid) {
+        const digits = geoid.replace(/\D/g, "");
+        if (digits.length >= 5) return digits.slice(-5, -3);
+        if (digits.length >= 2) return digits.slice(0, 2);
+        return "";
+      }
 
+      async function loadArea() {
+        const years = [2024, 2023, 2022];
+        const stateCodes = [...STATES_50_FIPS].sort();
+
+        let chosenYear = null;
         const map = new Map();
-        for (const row of data) {
-          if (!STATES_50_FIPS.has(row.geoid)) continue;
-          map.set(row.geoid, {
-            fips: row.geoid,
-            name: row.name,
-            landArea: row.landArea,
-            totalArea: row.landArea + row.waterArea
-          });
+        let lastErr;
+
+        for (const year of years) {
+          try {
+            const urls = stateCodes.map(
+              (fips) =>
+                `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/${year}_Gazetteer/${year}_gaz_counties_${fips}.txt`
+            );
+            const texts = await Promise.all(
+              urls.map(async (url) => {
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+                return res.text();
+              })
+            );
+
+            for (const txt of texts) {
+              for (const row of parseTsv(txt)) {
+                const stateFips = stateFipsFromGeoid(row.geoid);
+                if (!STATES_50_FIPS.has(stateFips)) continue;
+                const current =
+                  map.get(stateFips) ||
+                  { fips: stateFips, name: "", landArea: 0, totalArea: 0 };
+                current.name = current.name || row.name.split(",").pop().trim();
+                current.landArea += row.landArea;
+                current.totalArea += row.landArea + row.waterArea;
+                map.set(stateFips, current);
+              }
+            }
+
+            chosenYear = year;
+            break;
+          } catch (err) {
+            map.clear();
+            lastErr = err;
+          }
         }
-        return { url, map };
+
+        if (!chosenYear) throw lastErr || new Error("No Gazetteer year could be loaded");
+
+        return {
+          url: `https://www2.census.gov/geo/docs/maps-data/data/gazetteer/${chosenYear}_Gazetteer/`,
+          map
+        };
       }
 
       async function init() {
@@ -450,7 +490,7 @@
 
           statusEl.textContent = `Loaded ${merged.length} states from U.S. Census Bureau datasets.`;
           statusEl.classList.remove("error");
-          sourcesEl.innerHTML = `Sources: <a href="${state.sourcePop}" target="_blank" rel="noreferrer">Census Population API</a> and <a href="${state.sourceArea}" target="_blank" rel="noreferrer">Census Gazetteer Files</a>.`;
+          sourcesEl.innerHTML = `Sources: <a href="${state.sourcePop}" target="_blank" rel="noreferrer">Census ACS 1-Year API (B01003_001E)</a> and <a href="${state.sourceArea}" target="_blank" rel="noreferrer">Census Gazetteer county files aggregated to states</a>.`;
           render();
         } catch (err) {
           statusEl.textContent = `Could not load Census data in this browser session. ${err.message}`;
