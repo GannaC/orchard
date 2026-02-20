@@ -130,19 +130,19 @@
       }
 
       .state-flag {
-        width: 1.08rem;
-        height: 1.08rem;
-        border-radius: 999px;
+        width: 1.4rem;
+        height: 1rem;
+        border-radius: 2px;
         border: 1px solid #d9e3f2;
         background: #f6f8fc;
-        object-fit: cover;
+        object-fit: contain;
         flex: 0 0 auto;
       }
 
       .flag-fallback {
-        width: 1.08rem;
-        height: 1.08rem;
-        border-radius: 999px;
+        width: 1.4rem;
+        height: 1rem;
+        border-radius: 2px;
         border: 1px solid #d9e3f2;
         background: #f6f8fc;
         display: inline-flex;
@@ -205,7 +205,7 @@
       th,
       td {
         text-align: left;
-        padding: 0.46rem 0.32rem;
+        padding: 0.5rem 0.42rem;
         border-bottom: 1px solid #e4ebf3;
         font-size: 0.9rem;
       }
@@ -214,9 +214,36 @@
         color: #2a3f66;
       }
 
+      tbody tr:nth-child(even) td {
+        background: #f9fbff;
+      }
+
+      td.heat {
+        border-radius: 6px;
+        transition: background-color 220ms ease;
+      }
+
       .table-wrap {
-        max-height: 52vh;
+        max-height: 72vh;
+        min-height: 64vh;
         overflow: auto;
+      }
+
+      .table-filters {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 0.7rem;
+      }
+
+      .table-filters input,
+      .table-filters select {
+        border: 1px solid #c8d4e6;
+        border-radius: 10px;
+        background: #fff;
+        padding: 0.45rem 0.58rem;
+        font: inherit;
+        color: inherit;
       }
 
       .meta {
@@ -295,6 +322,16 @@
 
         <article class="panel">
           <h2 style="margin: 0 0 0.7rem; font-size: 1.1rem">State data table</h2>
+          <div class="table-filters">
+            <input id="filterState" type="search" placeholder="Filter by state name..." aria-label="Filter by state name" />
+            <select id="filterRegion" aria-label="Filter by region">
+              <option value="all">All regions</option>
+              <option value="Northeast">Northeast</option>
+              <option value="Midwest">Midwest</option>
+              <option value="South">South</option>
+              <option value="West">West</option>
+            </select>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -328,6 +365,22 @@
         "25": "MA", "26": "MI", "27": "MN", "28": "MS", "29": "MO", "30": "MT", "31": "NE", "32": "NV", "33": "NH", "34": "NJ",
         "35": "NM", "36": "NY", "37": "NC", "38": "ND", "39": "OH", "40": "OK", "41": "OR", "42": "PA", "44": "RI", "45": "SC",
         "46": "SD", "47": "TN", "48": "TX", "49": "UT", "50": "VT", "51": "VA", "53": "WA", "54": "WV", "55": "WI", "56": "WY"
+      };
+
+      const STATE_TO_REGION = {
+        Alabama: "South", Alaska: "West", Arizona: "West", Arkansas: "South",
+        California: "West", Colorado: "West", Connecticut: "Northeast", Delaware: "South",
+        Florida: "South", Georgia: "South", Hawaii: "West", Idaho: "West",
+        Illinois: "Midwest", Indiana: "Midwest", Iowa: "Midwest", Kansas: "Midwest",
+        Kentucky: "South", Louisiana: "South", Maine: "Northeast", Maryland: "South",
+        Massachusetts: "Northeast", Michigan: "Midwest", Minnesota: "Midwest", Mississippi: "South",
+        Missouri: "Midwest", Montana: "West", Nebraska: "Midwest", Nevada: "West",
+        "New Hampshire": "Northeast", "New Jersey": "Northeast", "New Mexico": "West", "New York": "Northeast",
+        "North Carolina": "South", "North Dakota": "Midwest", Ohio: "Midwest", Oklahoma: "South",
+        Oregon: "West", Pennsylvania: "Northeast", "Rhode Island": "Northeast", "South Carolina": "South",
+        "South Dakota": "Midwest", Tennessee: "South", Texas: "South", Utah: "West",
+        Vermont: "Northeast", Virginia: "South", Washington: "West", "West Virginia": "South",
+        Wisconsin: "Midwest", Wyoming: "West"
       };
 
       const STATE_FLAG_FILE = {
@@ -397,6 +450,8 @@
       const tableBody = document.getElementById("tableBody");
       const statusEl = document.getElementById("status");
       const sourcesEl = document.getElementById("sources");
+      const filterStateEl = document.getElementById("filterState");
+      const filterRegionEl = document.getElementById("filterRegion");
 
       metricSelect.addEventListener("change", () => {
         state.metric = metricSelect.value;
@@ -407,6 +462,9 @@
         state.sort = sortSelect.value;
         render();
       });
+
+      filterStateEl.addEventListener("input", () => render());
+      filterRegionEl.addEventListener("change", () => render());
 
       function formatNumber(num, decimals = 0) {
         return new Intl.NumberFormat("en-US", {
@@ -435,8 +493,22 @@
         return formatNumber(row.density, 1);
       }
 
+      function heatColor(value, min, max) {
+        if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max)) return "transparent";
+        if (max <= min) return "transparent";
+        const t = (value - min) / (max - min);
+        const alpha = 0.08 + t * 0.24;
+        return `rgba(31, 94, 189, ${alpha.toFixed(3)})`;
+      }
+
       function sortedRows() {
-        const copy = [...state.rows];
+        const query = filterStateEl.value.trim().toLowerCase();
+        const region = filterRegionEl.value;
+        const copy = state.rows.filter((row) => {
+          const matchesState = !query || row.name.toLowerCase().includes(query);
+          const matchesRegion = region === "all" || row.region === region;
+          return matchesState && matchesRegion;
+        });
         copy.sort((a, b) => {
           const diff = getMetricValue(a) - getMetricValue(b);
           return state.sort === "asc" ? diff : -diff;
@@ -447,7 +519,25 @@
       function render() {
         if (!state.rows.length) return;
         const rows = sortedRows();
+        if (!rows.length) {
+          barsEl.innerHTML = "";
+          tableBody.innerHTML = `<tr><td colspan="5">No states match current filters.</td></tr>`;
+          return;
+        }
         const max = Math.max(...rows.map(getMetricValue));
+        const popValues = rows.map((r) => r.population);
+        const landValues = rows.map((r) => r.landArea);
+        const totalValues = rows.map((r) => r.totalArea);
+        const densityValues = rows.map((r) => r.density);
+
+        const popMin = Math.min(...popValues);
+        const popMax = Math.max(...popValues);
+        const landMin = Math.min(...landValues);
+        const landMax = Math.max(...landValues);
+        const totalMin = Math.min(...totalValues);
+        const totalMax = Math.max(...totalValues);
+        const densityMin = Math.min(...densityValues);
+        const densityMax = Math.max(...densityValues);
 
         barsEl.innerHTML = rows
           .map((row, i) => {
@@ -455,7 +545,7 @@
             const flagSrc = stateFlagByName(row.name);
             return `
               <div class="row" style="--delay:${Math.min(i * 22, 440)}ms">
-                <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;flag-fallback&quot; aria-label=&quot;${row.name} code&quot;>${row.abbr}</span>'" />${row.name}</div>
+                <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" title="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;flag-fallback&quot; aria-label=&quot;${row.name} code&quot; title=&quot;${row.name} flag&quot;>${row.abbr}</span>'" />${row.name}</div>
                 <div class="track"><div class="fill" style="--w:0%" data-target="${width.toFixed(2)}%"></div></div>
                 <div class="value">${metricLabel(row)}</div>
               </div>
@@ -475,10 +565,10 @@
             (row) => `
             <tr>
               <td>${row.name}</td>
-              <td>${formatNumber(row.population)}</td>
-              <td>${formatNumber(row.landArea, 1)}</td>
-              <td>${formatNumber(row.totalArea, 1)}</td>
-              <td>${formatNumber(row.density, 1)}</td>
+              <td class="heat" style="background:${heatColor(row.population, popMin, popMax)}">${formatNumber(row.population)}</td>
+              <td class="heat" style="background:${heatColor(row.landArea, landMin, landMax)}">${formatNumber(row.landArea, 1)}</td>
+              <td class="heat" style="background:${heatColor(row.totalArea, totalMin, totalMax)}">${formatNumber(row.totalArea, 1)}</td>
+              <td class="heat" style="background:${heatColor(row.density, densityMin, densityMax)}">${formatNumber(row.density, 1)}</td>
             </tr>
           `
           )
@@ -525,6 +615,7 @@
                 fips: String(a.GEOID).padStart(2, "0"),
                 name: a.NAME,
                 abbr: FIPS_TO_ABBR[String(a.GEOID).padStart(2, "0")] || "",
+                region: STATE_TO_REGION[a.NAME] || "Other",
                 population: pop,
                 landArea: landSqMi,
                 totalArea: landSqMi + waterSqMi,
