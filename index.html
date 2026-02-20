@@ -330,6 +330,59 @@
         "46": "SD", "47": "TN", "48": "TX", "49": "UT", "50": "VT", "51": "VA", "53": "WA", "54": "WV", "55": "WI", "56": "WY"
       };
 
+      const STATE_FLAG_FILE = {
+        Alabama: "Flag of Alabama.svg",
+        Alaska: "Flag of Alaska.svg",
+        Arizona: "Flag of Arizona.svg",
+        Arkansas: "Flag of Arkansas.svg",
+        California: "Flag of California.svg",
+        Colorado: "Flag of Colorado.svg",
+        Connecticut: "Flag of Connecticut.svg",
+        Delaware: "Flag of Delaware.svg",
+        Florida: "Flag of Florida.svg",
+        Georgia: "Flag of Georgia (U.S. state).svg",
+        Hawaii: "Flag of Hawaii.svg",
+        Idaho: "Flag of Idaho.svg",
+        Illinois: "Flag of Illinois.svg",
+        Indiana: "Flag of Indiana.svg",
+        Iowa: "Flag of Iowa.svg",
+        Kansas: "Flag of Kansas.svg",
+        Kentucky: "Flag of Kentucky.svg",
+        Louisiana: "Flag of Louisiana.svg",
+        Maine: "Flag of Maine.svg",
+        Maryland: "Flag of Maryland.svg",
+        Massachusetts: "Flag of Massachusetts.svg",
+        Michigan: "Flag of Michigan.svg",
+        Minnesota: "Flag of Minnesota.svg",
+        Mississippi: "Flag of Mississippi.svg",
+        Missouri: "Flag of Missouri.svg",
+        Montana: "Flag of Montana.svg",
+        Nebraska: "Flag of Nebraska.svg",
+        Nevada: "Flag of Nevada.svg",
+        "New Hampshire": "Flag of New Hampshire.svg",
+        "New Jersey": "Flag of New Jersey.svg",
+        "New Mexico": "Flag of New Mexico.svg",
+        "New York": "Flag of New York.svg",
+        "North Carolina": "Flag of North Carolina.svg",
+        "North Dakota": "Flag of North Dakota.svg",
+        Ohio: "Flag of Ohio.svg",
+        Oklahoma: "Flag of Oklahoma.svg",
+        Oregon: "Flag of Oregon.svg",
+        Pennsylvania: "Flag of Pennsylvania.svg",
+        "Rhode Island": "Flag of Rhode Island.svg",
+        "South Carolina": "Flag of South Carolina.svg",
+        "South Dakota": "Flag of South Dakota.svg",
+        Tennessee: "Flag of Tennessee.svg",
+        Texas: "Flag of Texas.svg",
+        Utah: "Flag of Utah.svg",
+        Vermont: "Flag of Vermont.svg",
+        Virginia: "Flag of Virginia.svg",
+        Washington: "Flag of Washington.svg",
+        "West Virginia": "Flag of West Virginia.svg",
+        Wisconsin: "Flag of Wisconsin.svg",
+        Wyoming: "Flag of Wyoming.svg"
+      };
+
       const state = {
         rows: [],
         metric: "population",
@@ -362,8 +415,10 @@
         }).format(num);
       }
 
-      function stateFlagUrl(abbr) {
-        return `https://flags.ox3.in/svg/us/${abbr.toLowerCase()}.svg`;
+      function stateFlagByName(name) {
+        const file = STATE_FLAG_FILE[name];
+        if (!file) return "";
+        return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}`;
       }
 
       function getMetricValue(row) {
@@ -397,7 +452,7 @@
         barsEl.innerHTML = rows
           .map((row, i) => {
             const width = max ? (getMetricValue(row) / max) * 100 : 0;
-            const flagSrc = stateFlagUrl(row.abbr);
+            const flagSrc = stateFlagByName(row.name);
             return `
               <div class="row" style="--delay:${Math.min(i * 22, 440)}ms">
                 <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;flag-fallback&quot; aria-label=&quot;${row.name} code&quot;>${row.abbr}</span>'" />${row.name}</div>
