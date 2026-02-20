@@ -83,21 +83,13 @@
         font-weight: 600;
       }
 
-      .controls select,
-      .controls button {
+      .controls select {
         border: 1px solid #bcccdc;
         border-radius: 10px;
         background: #fff;
         padding: 0.45rem 0.68rem;
         font: inherit;
         color: inherit;
-      }
-
-      .controls button {
-        background: var(--accent);
-        color: #fff;
-        border-color: var(--accent);
-        cursor: pointer;
       }
 
       .bars {
@@ -114,11 +106,30 @@
         grid-template-columns: minmax(120px, 180px) 1fr max-content;
         align-items: center;
         gap: 0.6rem;
+        opacity: 0;
+        transform: translateY(8px);
+        animation: row-in 420ms cubic-bezier(0.21, 0.95, 0.29, 1) forwards;
+        animation-delay: var(--delay, 0ms);
       }
 
       .state {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
         font-weight: 600;
         font-size: 0.92rem;
+      }
+
+      .flag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.1rem 0.38rem;
+        border-radius: 999px;
+        background: #f2f7fb;
+        border: 1px solid #d5e3f0;
+        font-size: 0.72rem;
+        line-height: 1.3;
       }
 
       .track {
@@ -133,7 +144,22 @@
         width: var(--w, 0%);
         background: linear-gradient(90deg, var(--accent), var(--accent-soft));
         border-radius: inherit;
-        transition: width 560ms cubic-bezier(0.2, 0.8, 0.22, 1);
+        transition: width 760ms cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+      }
+
+      .fill::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          105deg,
+          transparent 0%,
+          #ffffff66 45%,
+          transparent 100%
+        );
+        transform: translateX(-120%);
+        animation: shine 1.6s ease-out both;
       }
 
       .value {
@@ -186,6 +212,19 @@
         color: #0a5ea8;
       }
 
+      @keyframes row-in {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes shine {
+        to {
+          transform: translateX(120%);
+        }
+      }
+
       @media (min-width: 960px) {
         .grid {
           grid-template-columns: 1.2fr 1fr;
@@ -221,7 +260,6 @@
               <option value="asc">Lowest to highest</option>
             </select>
 
-            <button id="animate" type="button">Replay animation</button>
           </div>
 
           <div class="bars" id="bars" role="img" aria-label="State comparison chart"></div>
@@ -258,6 +296,14 @@
         "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"
       ]);
 
+      const FIPS_TO_ABBR = {
+        "01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA", "08": "CO", "09": "CT", "10": "DE", "12": "FL", "13": "GA",
+        "15": "HI", "16": "ID", "17": "IL", "18": "IN", "19": "IA", "20": "KS", "21": "KY", "22": "LA", "23": "ME", "24": "MD",
+        "25": "MA", "26": "MI", "27": "MN", "28": "MS", "29": "MO", "30": "MT", "31": "NE", "32": "NV", "33": "NH", "34": "NJ",
+        "35": "NM", "36": "NY", "37": "NC", "38": "ND", "39": "OH", "40": "OK", "41": "OR", "42": "PA", "44": "RI", "45": "SC",
+        "46": "SD", "47": "TN", "48": "TX", "49": "UT", "50": "VT", "51": "VA", "53": "WA", "54": "WV", "55": "WI", "56": "WY"
+      };
+
       const state = {
         rows: [],
         metric: "population",
@@ -272,7 +318,6 @@
       const tableBody = document.getElementById("tableBody");
       const statusEl = document.getElementById("status");
       const sourcesEl = document.getElementById("sources");
-      const animateBtn = document.getElementById("animate");
 
       metricSelect.addEventListener("change", () => {
         state.metric = metricSelect.value;
@@ -282,14 +327,6 @@
       sortSelect.addEventListener("change", () => {
         state.sort = sortSelect.value;
         render();
-      });
-
-      animateBtn.addEventListener("click", () => {
-        barsEl.querySelectorAll(".fill").forEach((el) => {
-          const target = el.style.getPropertyValue("--w") || "0%";
-          el.style.setProperty("--w", "0%");
-          requestAnimationFrame(() => el.style.setProperty("--w", target));
-        });
       });
 
       function formatNumber(num, decimals = 0) {
@@ -328,17 +365,24 @@
         const max = Math.max(...rows.map(getMetricValue));
 
         barsEl.innerHTML = rows
-          .map((row) => {
+          .map((row, i) => {
             const width = max ? (getMetricValue(row) / max) * 100 : 0;
             return `
-              <div class="row">
-                <div class="state">${row.name}</div>
-                <div class="track"><div class="fill" style="--w:${width.toFixed(2)}%"></div></div>
+              <div class="row" style="--delay:${Math.min(i * 22, 440)}ms">
+                <div class="state"><span class="flag-badge">🇺🇸 ${row.abbr}</span>${row.name}</div>
+                <div class="track"><div class="fill" style="--w:0%" data-target="${width.toFixed(2)}%"></div></div>
                 <div class="value">${metricLabel(row)}</div>
               </div>
             `;
           })
           .join("");
+
+        requestAnimationFrame(() => {
+          barsEl.querySelectorAll(".fill").forEach((el, i) => {
+            const target = el.getAttribute("data-target") || "0%";
+            setTimeout(() => el.style.setProperty("--w", target), Math.min(i * 14, 420));
+          });
+        });
 
         tableBody.innerHTML = rows
           .map(
@@ -394,6 +438,7 @@
               return {
                 fips: String(a.GEOID).padStart(2, "0"),
                 name: a.NAME,
+                abbr: FIPS_TO_ABBR[String(a.GEOID).padStart(2, "0")] || "",
                 population: pop,
                 landArea: landSqMi,
                 totalArea: landSqMi + waterSqMi,
