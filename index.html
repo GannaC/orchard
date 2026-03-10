@@ -3,710 +3,327 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>U.S. States: Population and Territory</title>
+    <title>West Coast National Parks</title>
+    <meta
+      name="description"
+      content="A modern West Coast national parks guide with official National Park Service comparison data."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --bg-1: #f4f7fb;
-        --bg-2: #eef3f9;
-        --ink: #16213f;
-        --muted: #5b6882;
-        --panel: #ffffff;
-        --accent: #1f5ebd;
-        --accent-soft: #78a6ef;
-        --border: #dfe7f2;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: "Source Sans 3", "Segoe UI", "Avenir Next", sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(circle at 8% 8%, #ffffff 0%, transparent 32%),
-          radial-gradient(circle at 92% 12%, #e8f0ff 0%, transparent 35%),
-          linear-gradient(145deg, var(--bg-1), var(--bg-2));
-      }
-
-      .wrap {
-        width: min(1200px, 96vw);
-        margin: 2rem auto 3rem;
-      }
-
-      .top-banner {
-        width: min(1200px, 96vw);
-        margin: 1rem auto 0;
-        border: 1px solid #cfe0ff;
-        background: linear-gradient(95deg, #0f2f66, #1f5ebd 60%, #3d7cdd);
-        color: #fff;
-        border-radius: 14px;
-        padding: 0.7rem 0.95rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.7rem;
-        box-shadow: 0 8px 18px -14px #0f2f6680;
-      }
-
-      .banner-title {
-        font-weight: 700;
-        letter-spacing: 0.01em;
-      }
-
-      .banner-note {
-        font-size: 0.9rem;
-        opacity: 0.95;
-      }
-
-      .hero {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 1.2rem 1.4rem;
-        box-shadow: 0 10px 24px -20px #15264d40;
-        border-top: 6px solid #f4a531;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(1.3rem, 1.1rem + 1.7vw, 2.25rem);
-        line-height: 1.15;
-        letter-spacing: 0.01em;
-        color: #0f2247;
-      }
-
-      .subtitle {
-        margin: 0.55rem 0 0;
-        color: var(--muted);
-        max-width: 75ch;
-      }
-
-      .grid {
-        margin-top: 1rem;
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: 1fr;
-      }
-
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 1rem;
-        box-shadow: 0 10px 24px -20px #15264d33;
-      }
-
-      .controls {
-        display: flex;
-        gap: 0.6rem;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-
-      .controls label {
-        font-weight: 600;
-        color: #233354;
-      }
-
-      .controls select {
-        border: 1px solid #bcccdc;
-        border-radius: 10px;
-        background: #fff;
-        padding: 0.45rem 0.68rem;
-        font: inherit;
-        color: inherit;
-      }
-
-      .bars {
-        margin-top: 1rem;
-        display: grid;
-        gap: 0.45rem;
-        max-height: 68vh;
-        overflow: auto;
-        padding-right: 0.35rem;
-      }
-
-      .row {
-        display: grid;
-        grid-template-columns: minmax(120px, 180px) 1fr max-content;
-        align-items: center;
-        gap: 0.6rem;
-        opacity: 0;
-        transform: translateY(8px);
-        animation: row-in 420ms cubic-bezier(0.21, 0.95, 0.29, 1) forwards;
-        animation-delay: var(--delay, 0ms);
-      }
-
-      .state {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-weight: 600;
-        font-size: 0.92rem;
-      }
-
-      .state-flag {
-        width: 1.4rem;
-        height: 1rem;
-        border-radius: 2px;
-        border: 1px solid #d9e3f2;
-        background: #f6f8fc;
-        object-fit: contain;
-        flex: 0 0 auto;
-      }
-
-      .flag-fallback {
-        width: 1.4rem;
-        height: 1rem;
-        border-radius: 2px;
-        border: 1px solid #d9e3f2;
-        background: #f6f8fc;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.54rem;
-        font-weight: 700;
-        color: #3f4f6e;
-        flex: 0 0 auto;
-      }
-
-      .track {
-        height: 1.35rem;
-        border-radius: 999px;
-        background: #eaf0f8;
-        overflow: hidden;
-      }
-
-      .fill {
-        height: 100%;
-        width: var(--w, 0%);
-        background: linear-gradient(90deg, var(--accent), #3d7cdd 58%, var(--accent-soft));
-        border-radius: inherit;
-        transition: width 760ms cubic-bezier(0.16, 1, 0.3, 1);
-        position: relative;
-      }
-
-      .fill::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          105deg,
-          transparent 0%,
-          #ffffff66 45%,
-          transparent 100%
-        );
-        transform: translateX(-120%);
-        animation: shine 1.6s ease-out both;
-      }
-
-      .value {
-        min-width: 84px;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-        font-size: 0.9rem;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      thead {
-        position: sticky;
-        top: 0;
-        background: #fff;
-      }
-
-      th,
-      td {
-        text-align: left;
-        padding: 0.5rem 0.42rem;
-        border-bottom: 1px solid #e4ebf3;
-        font-size: 0.9rem;
-      }
-
-      th {
-        color: #2a3f66;
-      }
-
-      tbody tr:nth-child(even) td {
-        background: #f9fbff;
-      }
-
-      td.heat {
-        border-radius: 6px;
-        transition: background-color 220ms ease;
-      }
-
-      .table-wrap {
-        max-height: 72vh;
-        min-height: 64vh;
-        overflow: auto;
-      }
-
-      .table-filters {
-        display: grid;
-        grid-template-columns: 1.2fr 1fr;
-        gap: 0.5rem;
-        margin-bottom: 0.7rem;
-      }
-
-      .table-filters input,
-      .table-filters select {
-        border: 1px solid #c8d4e6;
-        border-radius: 10px;
-        background: #fff;
-        padding: 0.45rem 0.58rem;
-        font: inherit;
-        color: inherit;
-      }
-
-      .meta {
-        margin-top: 0.8rem;
-        color: var(--muted);
-        font-size: 0.86rem;
-      }
-
-      .status {
-        margin-top: 0.85rem;
-        font-size: 0.9rem;
-      }
-
-      .status.error {
-        color: #b42318;
-      }
-
-      a {
-        color: #1b59b7;
-      }
-
-      @keyframes row-in {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes shine {
-        to {
-          transform: translateX(120%);
-        }
-      }
-
-      @media (min-width: 960px) {
-        .grid {
-          grid-template-columns: 1.2fr 1fr;
-        }
-      }
-
-      @media (max-width: 760px) {
-        .top-banner {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-      }
-
-      .site-footer {
-        width: min(1200px, 96vw);
-        margin: 0 auto 1.2rem;
-        padding: 0.9rem 0.2rem 0.2rem;
-        color: #4a5875;
-        font-size: 0.88rem;
-        border-top: 1px solid #d7e1f0;
-        display: flex;
-        justify-content: space-between;
-        gap: 0.7rem;
-        flex-wrap: wrap;
-      }
-    </style>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <section class="top-banner" aria-label="Project banner">
-      <div class="banner-title">U.S. States Data Dashboard</div>
-      <div class="banner-note">Official Census TIGERweb data with interactive analysis and filtering</div>
-    </section>
+    <div class="page-shell">
+      <header class="hero">
+        <nav class="topbar" aria-label="Section shortcuts">
+          <span class="brand">Pacific Parks</span>
+          <div class="topbar-links">
+            <a href="#comparison">Compare</a>
+            <a href="#parks">Parks</a>
+            <a href="#sources">Sources</a>
+          </div>
+        </nav>
 
-    <main class="wrap">
-      <section class="hero">
-        <h1>All 50 U.S. States: Population and Territory</h1>
-        <p class="subtitle">
-          Interactive comparison using official U.S. Census Bureau TIGERweb data (2020 Census population
-          and state area fields). Choose a metric to compare states by population, land area, total area,
-          or population density.
-        </p>
-      </section>
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <p class="eyebrow">West Coast National Parks</p>
+            <h1>Your West Coast national park short list, ready for trip planning.</h1>
+            <p class="hero-text">
+              Explore six national parks across California, Oregon, and Washington
+              through official visitation data, standout ecosystems, wildlife,
+              gateways, and quick planning notes sourced from the National Park
+              Service.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#comparison">View comparisons</a>
+              <a class="button button-secondary" href="#sources">Check sources</a>
+            </div>
+          </section>
 
-      <section class="grid" aria-live="polite">
-        <article class="panel">
-          <div class="controls">
-            <label for="metric">Metric</label>
-            <select id="metric">
-              <option value="population">Population</option>
-              <option value="landArea">Land area (sq mi)</option>
-              <option value="totalArea">Total area (sq mi)</option>
-              <option value="density">Population density (people/sq mi)</option>
-            </select>
+          <aside class="hero-panel" aria-label="Summary metrics">
+            <div class="metric-card">
+              <span class="metric-label">Featured parks</span>
+              <strong class="metric-value">6</strong>
+              <span class="metric-note">California, Oregon, Washington</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Combined footprint</span>
+              <strong class="metric-value">3.0M+</strong>
+              <span class="metric-note">acres represented on this page</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">2024 recreation visits</span>
+              <strong class="metric-value">13.6M</strong>
+              <span class="metric-note">across the selected parks</span>
+            </div>
+          </aside>
+        </div>
+      </header>
 
-            <label for="sort">Sort</label>
-            <select id="sort">
-              <option value="desc">Highest to lowest</option>
-              <option value="asc">Lowest to highest</option>
-            </select>
-
+      <main>
+        <section class="surface explorer-section" id="explorer">
+          <div class="section-head">
+            <div>
+              <p class="section-label">Park explorer</p>
+              <h2>Switch between ecosystems, water landmarks, and signature viewpoints.</h2>
+            </div>
           </div>
 
-          <div class="bars" id="bars" role="img" aria-label="State comparison chart"></div>
-          <div class="status" id="status">Loading Census data...</div>
-          <p class="meta" id="sources"></p>
-        </article>
-
-        <article class="panel">
-          <h2 style="margin: 0 0 0.7rem; font-size: 1.1rem">State data table</h2>
-          <div class="table-filters">
-            <input id="filterState" type="search" placeholder="Filter by state name..." aria-label="Filter by state name" />
-            <select id="filterRegion" aria-label="Filter by region">
-              <option value="all">All regions</option>
-              <option value="Northeast">Northeast</option>
-              <option value="Midwest">Midwest</option>
-              <option value="South">South</option>
-              <option value="West">West</option>
-            </select>
+          <div class="tablist" role="tablist" aria-label="Explorer views">
+            <button class="tab is-active" type="button" role="tab" aria-selected="true" data-feature-tab="trees">
+              Tree types
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-feature-tab="water">
+              Lakes and water
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-feature-tab="vistas">
+              Viewpoints
+            </button>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>State</th>
-                  <th>Population</th>
-                  <th>Land sq mi</th>
-                  <th>Total sq mi</th>
-                  <th>Density</th>
-                </tr>
-              </thead>
-              <tbody id="tableBody"></tbody>
-            </table>
+
+          <div class="feature-grid" id="feature-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="overview-grid" aria-label="Highlights">
+          <article class="surface highlight-card">
+            <p class="section-label">At a glance</p>
+            <h2>The busiest park in this set is Yosemite.</h2>
+            <p>
+              Yosemite recorded 4,121,807 recreation visits in 2024, ahead of Olympic
+              at 3,717,267 and Joshua Tree at 2,991,874.
+            </p>
+          </article>
+
+          <article class="surface highlight-card">
+            <p class="section-label">Scale</p>
+            <h2>Olympic is the largest park here by acreage.</h2>
+            <p>
+              Olympic spans 922,651 acres, while Redwood is the smallest featured
+              park at 138,999 acres.
+            </p>
+          </article>
+
+          <article class="surface highlight-card">
+            <p class="section-label">Distinctive fact</p>
+            <h2>Crater Lake holds the deepest lake in the United States.</h2>
+            <p>
+              The park homepage describes it as the deepest lake in the USA, formed
+              after Mount Mazama collapsed about 7,700 years ago.
+            </p>
+          </article>
+        </section>
+
+        <section class="surface comparison-section" id="comparison">
+          <div class="section-head">
+            <div>
+              <p class="section-label">Trip planner</p>
+              <h2>Compare demand, scale, wildlife, gateways, and signature appeal.</h2>
+            </div>
           </div>
-        </article>
-      </section>
-    </main>
 
-    <footer class="site-footer">
-      <div>Data source: U.S. Census Bureau TIGERweb (POP100, AREALAND, AREAWATER).</div>
-      <div>Built for /Users/anna/Documents/New project</div>
-    </footer>
+          <div class="tablist" role="tablist" aria-label="Comparison views">
+            <button class="tab is-active" type="button" role="tab" aria-selected="true" data-tab="visitors">
+              Most visited
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="acreage">
+              Park size
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="wildlife">
+              Wildlife
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="airports">
+              Air gateway
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="uniqueness">
+              Why go
+            </button>
+          </div>
 
-    <script>
-      const STATES_50_FIPS = new Set([
-        "01", "02", "04", "05", "06", "08", "09", "10", "12", "13",
-        "15", "16", "17", "18", "19", "20", "21", "22", "23", "24",
-        "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
-        "35", "36", "37", "38", "39", "40", "41", "42", "44", "45",
-        "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"
-      ]);
-
-      const FIPS_TO_ABBR = {
-        "01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA", "08": "CO", "09": "CT", "10": "DE", "12": "FL", "13": "GA",
-        "15": "HI", "16": "ID", "17": "IL", "18": "IN", "19": "IA", "20": "KS", "21": "KY", "22": "LA", "23": "ME", "24": "MD",
-        "25": "MA", "26": "MI", "27": "MN", "28": "MS", "29": "MO", "30": "MT", "31": "NE", "32": "NV", "33": "NH", "34": "NJ",
-        "35": "NM", "36": "NY", "37": "NC", "38": "ND", "39": "OH", "40": "OK", "41": "OR", "42": "PA", "44": "RI", "45": "SC",
-        "46": "SD", "47": "TN", "48": "TX", "49": "UT", "50": "VT", "51": "VA", "53": "WA", "54": "WV", "55": "WI", "56": "WY"
-      };
-
-      const STATE_TO_REGION = {
-        Alabama: "South", Alaska: "West", Arizona: "West", Arkansas: "South",
-        California: "West", Colorado: "West", Connecticut: "Northeast", Delaware: "South",
-        Florida: "South", Georgia: "South", Hawaii: "West", Idaho: "West",
-        Illinois: "Midwest", Indiana: "Midwest", Iowa: "Midwest", Kansas: "Midwest",
-        Kentucky: "South", Louisiana: "South", Maine: "Northeast", Maryland: "South",
-        Massachusetts: "Northeast", Michigan: "Midwest", Minnesota: "Midwest", Mississippi: "South",
-        Missouri: "Midwest", Montana: "West", Nebraska: "Midwest", Nevada: "West",
-        "New Hampshire": "Northeast", "New Jersey": "Northeast", "New Mexico": "West", "New York": "Northeast",
-        "North Carolina": "South", "North Dakota": "Midwest", Ohio: "Midwest", Oklahoma: "South",
-        Oregon: "West", Pennsylvania: "Northeast", "Rhode Island": "Northeast", "South Carolina": "South",
-        "South Dakota": "Midwest", Tennessee: "South", Texas: "South", Utah: "West",
-        Vermont: "Northeast", Virginia: "South", Washington: "West", "West Virginia": "South",
-        Wisconsin: "Midwest", Wyoming: "West"
-      };
-
-      const STATE_FLAG_FILE = {
-        Alabama: "Flag of Alabama.svg",
-        Alaska: "Flag of Alaska.svg",
-        Arizona: "Flag of Arizona.svg",
-        Arkansas: "Flag of Arkansas.svg",
-        California: "Flag of California.svg",
-        Colorado: "Flag of Colorado.svg",
-        Connecticut: "Flag of Connecticut.svg",
-        Delaware: "Flag of Delaware.svg",
-        Florida: "Flag of Florida.svg",
-        Georgia: "Flag of Georgia (U.S. state).svg",
-        Hawaii: "Flag of Hawaii.svg",
-        Idaho: "Flag of Idaho.svg",
-        Illinois: "Flag of Illinois.svg",
-        Indiana: "Flag of Indiana.svg",
-        Iowa: "Flag of Iowa.svg",
-        Kansas: "Flag of Kansas.svg",
-        Kentucky: "Flag of Kentucky.svg",
-        Louisiana: "Flag of Louisiana.svg",
-        Maine: "Flag of Maine.svg",
-        Maryland: "Flag of Maryland.svg",
-        Massachusetts: "Flag of Massachusetts.svg",
-        Michigan: "Flag of Michigan.svg",
-        Minnesota: "Flag of Minnesota.svg",
-        Mississippi: "Flag of Mississippi.svg",
-        Missouri: "Flag of Missouri.svg",
-        Montana: "Flag of Montana.svg",
-        Nebraska: "Flag of Nebraska.svg",
-        Nevada: "Flag of Nevada.svg",
-        "New Hampshire": "Flag of New Hampshire.svg",
-        "New Jersey": "Flag of New Jersey.svg",
-        "New Mexico": "Flag of New Mexico.svg",
-        "New York": "Flag of New York.svg",
-        "North Carolina": "Flag of North Carolina.svg",
-        "North Dakota": "Flag of North Dakota.svg",
-        Ohio: "Flag of Ohio.svg",
-        Oklahoma: "Flag of Oklahoma.svg",
-        Oregon: "Flag of Oregon.svg",
-        Pennsylvania: "Flag of Pennsylvania.svg",
-        "Rhode Island": "Flag of Rhode Island.svg",
-        "South Carolina": "Flag of South Carolina.svg",
-        "South Dakota": "Flag of South Dakota.svg",
-        Tennessee: "Flag of Tennessee.svg",
-        Texas: "Flag of Texas.svg",
-        Utah: "Flag of Utah.svg",
-        Vermont: "Flag of Vermont.svg",
-        Virginia: "Flag of Virginia.svg",
-        Washington: "Flag of Washington.svg",
-        "West Virginia": "Flag of West Virginia.svg",
-        Wisconsin: "Flag of Wisconsin.svg",
-        Wyoming: "Flag of Wyoming.svg"
-      };
-
-      const state = {
-        rows: [],
-        metric: "population",
-        sort: "desc",
-        sourcePop: "",
-        sourceArea: ""
-      };
-
-      const metricSelect = document.getElementById("metric");
-      const sortSelect = document.getElementById("sort");
-      const barsEl = document.getElementById("bars");
-      const tableBody = document.getElementById("tableBody");
-      const statusEl = document.getElementById("status");
-      const sourcesEl = document.getElementById("sources");
-      const filterStateEl = document.getElementById("filterState");
-      const filterRegionEl = document.getElementById("filterRegion");
-
-      metricSelect.addEventListener("change", () => {
-        state.metric = metricSelect.value;
-        render();
-      });
-
-      sortSelect.addEventListener("change", () => {
-        state.sort = sortSelect.value;
-        render();
-      });
-
-      filterStateEl.addEventListener("input", () => render());
-      filterRegionEl.addEventListener("change", () => render());
-
-      function formatNumber(num, decimals = 0) {
-        return new Intl.NumberFormat("en-US", {
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals
-        }).format(num);
-      }
-
-      function stateFlagByName(name) {
-        const file = STATE_FLAG_FILE[name];
-        if (!file) return "";
-        return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}`;
-      }
-
-      function getMetricValue(row) {
-        if (state.metric === "landArea") return row.landArea;
-        if (state.metric === "totalArea") return row.totalArea;
-        if (state.metric === "density") return row.density;
-        return row.population;
-      }
-
-      function metricLabel(row) {
-        if (state.metric === "population") return formatNumber(row.population);
-        if (state.metric === "landArea") return formatNumber(row.landArea, 1);
-        if (state.metric === "totalArea") return formatNumber(row.totalArea, 1);
-        return formatNumber(row.density, 1);
-      }
-
-      function heatColor(value, min, max) {
-        if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max)) return "transparent";
-        if (max <= min) return "transparent";
-        const t = (value - min) / (max - min);
-        const alpha = 0.08 + t * 0.24;
-        return `rgba(31, 94, 189, ${alpha.toFixed(3)})`;
-      }
-
-      function sortedRows() {
-        const query = filterStateEl.value.trim().toLowerCase();
-        const region = filterRegionEl.value;
-        const copy = state.rows.filter((row) => {
-          const matchesState = !query || row.name.toLowerCase().includes(query);
-          const matchesRegion = region === "all" || row.region === region;
-          return matchesState && matchesRegion;
-        });
-        copy.sort((a, b) => {
-          const diff = getMetricValue(a) - getMetricValue(b);
-          return state.sort === "asc" ? diff : -diff;
-        });
-        return copy;
-      }
-
-      function render() {
-        if (!state.rows.length) return;
-        const rows = sortedRows();
-        if (!rows.length) {
-          barsEl.innerHTML = "";
-          tableBody.innerHTML = `<tr><td colspan="5">No states match current filters.</td></tr>`;
-          return;
-        }
-        const max = Math.max(...rows.map(getMetricValue));
-        const popValues = rows.map((r) => r.population);
-        const landValues = rows.map((r) => r.landArea);
-        const totalValues = rows.map((r) => r.totalArea);
-        const densityValues = rows.map((r) => r.density);
-
-        const popMin = Math.min(...popValues);
-        const popMax = Math.max(...popValues);
-        const landMin = Math.min(...landValues);
-        const landMax = Math.max(...landValues);
-        const totalMin = Math.min(...totalValues);
-        const totalMax = Math.max(...totalValues);
-        const densityMin = Math.min(...densityValues);
-        const densityMax = Math.max(...densityValues);
-
-        barsEl.innerHTML = rows
-          .map((row, i) => {
-            const width = max ? (getMetricValue(row) / max) * 100 : 0;
-            const flagSrc = stateFlagByName(row.name);
-            return `
-              <div class="row" style="--delay:${Math.min(i * 22, 440)}ms">
-                <div class="state"><img class="state-flag" src="${flagSrc}" alt="${row.name} flag" title="${row.name} flag" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;flag-fallback&quot; aria-label=&quot;${row.name} code&quot; title=&quot;${row.name} flag&quot;>${row.abbr}</span>'" />${row.name}</div>
-                <div class="track"><div class="fill" style="--w:0%" data-target="${width.toFixed(2)}%"></div></div>
-                <div class="value">${metricLabel(row)}</div>
+          <div class="comparison-layout">
+            <div class="chart-panel">
+              <div class="chart-head">
+                <div>
+                  <p class="chart-kicker" id="chart-kicker">Best for crowd energy</p>
+                  <h3 id="chart-title">Where visitors go first</h3>
+                </div>
+                <p class="chart-meta" id="chart-meta">Official NPS data and planning pages</p>
               </div>
-            `;
-          })
-          .join("");
+              <div class="comparison-summary" id="comparison-summary"></div>
+              <div class="bars" id="bars" aria-live="polite"></div>
+            </div>
 
-        requestAnimationFrame(() => {
-          barsEl.querySelectorAll(".fill").forEach((el, i) => {
-            const target = el.getAttribute("data-target") || "0%";
-            setTimeout(() => el.style.setProperty("--w", target), Math.min(i * 14, 420));
-          });
-        });
+            <div class="leaderboard" id="leaderboard" aria-label="Ranked park cards"></div>
+          </div>
+        </section>
 
-        tableBody.innerHTML = rows
-          .map(
-            (row) => `
-            <tr>
-              <td>${row.name}</td>
-              <td class="heat" style="background:${heatColor(row.population, popMin, popMax)}">${formatNumber(row.population)}</td>
-              <td class="heat" style="background:${heatColor(row.landArea, landMin, landMax)}">${formatNumber(row.landArea, 1)}</td>
-              <td class="heat" style="background:${heatColor(row.totalArea, totalMin, totalMax)}">${formatNumber(row.totalArea, 1)}</td>
-              <td class="heat" style="background:${heatColor(row.density, densityMin, densityMax)}">${formatNumber(row.density, 1)}</td>
-            </tr>
-          `
-          )
-          .join("");
-      }
+        <section class="parks-grid" id="parks" aria-label="Park cards">
+          <article class="surface park-card accent-yosemite">
+            <p class="park-state">California</p>
+            <h3>Yosemite</h3>
+            <p>
+              First protected in 1864, Yosemite is known for granite cliffs,
+              waterfalls, giant sequoias, and a vast High Sierra wilderness.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>4,121,807</dd></div>
+              <div><dt>Area</dt><dd>759,620 acres</dd></div>
+              <div><dt>Closest airport</dt><dd>Merced (MCE)</dd></div>
+            </dl>
+          </article>
 
-      async function fetchFirst(urls, parser) {
-        let lastErr;
-        for (const url of urls) {
-          try {
-            const res = await fetch(url, { cache: "no-store" });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await parser(res);
-            return { url, data };
-          } catch (err) {
-            lastErr = err;
-          }
-        }
-        throw lastErr || new Error("All endpoints failed");
-      }
+          <article class="surface park-card accent-olympic">
+            <p class="park-state">Washington</p>
+            <h3>Olympic</h3>
+            <p>
+              Olympic combines glacier-capped mountains, temperate rainforest, and
+              more than 70 miles of wild Pacific coastline.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>3,717,267</dd></div>
+              <div><dt>Area</dt><dd>922,651 acres</dd></div>
+              <div><dt>Signature wildlife</dt><dd>Roosevelt elk</dd></div>
+            </dl>
+          </article>
 
-      async function loadTigerStates() {
-        const layerIds = [54, 62, 70];
-        const urls = layerIds.map(
-          (id) =>
-            `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/${id}/query` +
-            `?where=1%3D1&outFields=GEOID,NAME,AREALAND,AREAWATER,POP100&returnGeometry=false&f=json`
-        );
+          <article class="surface park-card accent-joshua">
+            <p class="park-state">California</p>
+            <h3>Joshua Tree</h3>
+            <p>
+              Joshua Tree marks the meeting point of the Mojave and Colorado deserts
+              and is promoted by NPS for stargazing in an International Dark Sky Park.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>2,991,874</dd></div>
+              <div><dt>Area</dt><dd>795,156 acres</dd></div>
+              <div><dt>Closest airport</dt><dd>Palm Springs</dd></div>
+            </dl>
+          </article>
 
-        const { url, data } = await fetchFirst(urls, (res) => res.json());
-        const features = Array.isArray(data.features) ? data.features : [];
-        const sqMetersPerSqMile = 2589988.110336;
+          <article class="surface park-card accent-rainier">
+            <p class="park-state">Washington</p>
+            <h3>Mount Rainier</h3>
+            <p>
+              The park protects the most glaciated peak in the contiguous United
+              States, with meadows, old-growth forest, and an active volcano.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>1,620,006</dd></div>
+              <div><dt>Area</dt><dd>235,625 acres</dd></div>
+              <div><dt>Standout trait</dt><dd>Most glaciated peak in the contiguous U.S.</dd></div>
+            </dl>
+          </article>
 
-        return {
-          url,
-          rows: features
-            .map((f) => f.attributes || {})
-            .filter((a) => STATES_50_FIPS.has(String(a.GEOID).padStart(2, "0")))
-            .map((a) => {
-              const landSqMi = Number(a.AREALAND) / sqMetersPerSqMile;
-              const waterSqMi = Number(a.AREAWATER) / sqMetersPerSqMile;
-              const pop = Number(a.POP100);
-              return {
-                fips: String(a.GEOID).padStart(2, "0"),
-                name: a.NAME,
-                abbr: FIPS_TO_ABBR[String(a.GEOID).padStart(2, "0")] || "",
-                region: STATE_TO_REGION[a.NAME] || "Other",
-                population: pop,
-                landArea: landSqMi,
-                totalArea: landSqMi + waterSqMi,
-                density: pop / landSqMi
-              };
-            })
-        };
-      }
+          <article class="surface park-card accent-redwood">
+            <p class="park-state">California</p>
+            <h3>Redwood</h3>
+            <p>
+              Redwood National and State Parks protect some of the tallest trees on
+              Earth along a rugged stretch of Northern California coast.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>622,883</dd></div>
+              <div><dt>Area</dt><dd>138,999 acres</dd></div>
+              <div><dt>Closest airport</dt><dd>Del Norte County (CEC)</dd></div>
+            </dl>
+          </article>
 
-      async function init() {
-        try {
-          const tiger = await loadTigerStates();
-          const filtered = tiger.rows.filter(
-            (row) =>
-              Number.isFinite(row.population) &&
-              Number.isFinite(row.landArea) &&
-              row.landArea > 0
-          );
+          <article class="surface park-card accent-crater">
+            <p class="park-state">Oregon</p>
+            <h3>Crater Lake</h3>
+            <p>
+              Crater Lake is centered on the deepest lake in the United States and a
+              volcanic caldera formed after the collapse of Mount Mazama.
+            </p>
+            <dl>
+              <div><dt>2024 visits</dt><dd>504,942</dd></div>
+              <div><dt>Area</dt><dd>183,224 acres</dd></div>
+              <div><dt>Standout trait</dt><dd>Deepest lake in the U.S.</dd></div>
+            </dl>
+          </article>
+        </section>
 
-          state.rows = filtered;
-          state.sourcePop = tiger.url;
-          state.sourceArea = tiger.url;
+        <section class="surface facts-section">
+          <div class="section-head">
+            <div>
+              <p class="section-label">Useful comparisons</p>
+              <h2>Patterns across the six featured parks</h2>
+            </div>
+          </div>
 
-          statusEl.textContent = `Loaded ${filtered.length} states from U.S. Census TIGERweb.`;
-          statusEl.classList.remove("error");
-          sourcesEl.innerHTML = `Source: <a href="${state.sourcePop}" target="_blank" rel="noreferrer">U.S. Census TIGERweb State_County layer query</a> (2020 Census POP100 with AREALAND/AREAWATER).`;
-          render();
-        } catch (err) {
-          statusEl.textContent = `Could not load Census data in this browser session. ${err.message}`;
-          statusEl.classList.add("error");
-          sourcesEl.innerHTML = "Official source intended: U.S. Census Bureau TIGERweb State_County layer.";
-          console.error(err);
-        }
-      }
+          <div class="facts-grid">
+            <article class="fact-tile">
+              <h3>Largest footprint</h3>
+              <p>Olympic leads this set at 922,651 acres.</p>
+            </article>
+            <article class="fact-tile">
+              <h3>Highest visitation</h3>
+              <p>Yosemite drew the most visitors in 2024 with 4.12 million.</p>
+            </article>
+            <article class="fact-tile">
+              <h3>Best airport access</h3>
+              <p>Redwood has the tightest air-to-park gateway here, with Del Norte County Airport about 4 miles from Crescent City Information Center.</p>
+            </article>
+            <article class="fact-tile">
+              <h3>Best wildlife personality</h3>
+              <p>Olympic and Redwood are the strongest bets for Roosevelt elk, while Joshua Tree shifts the experience toward desert specialists.</p>
+            </article>
+          </div>
+        </section>
 
-      init();
-    </script>
+        <section class="surface sources-section" id="sources">
+          <div class="section-head">
+            <div>
+              <p class="section-label">Official sources</p>
+              <h2>All facts and numbers on this page come from NPS pages.</h2>
+            </div>
+          </div>
+
+          <div class="sources-list">
+            <a href="https://irma.nps.gov/Stats/MvcReportViewer.aspx?_15=True&_16=True&_18=True&_19=True&_34=False&_35=False&_39=880px&_id=e90fc5f4-3f91-4646-a59f-905037416aeb&_m=Remote&_r=%2FIRMA+Prod%2FSTATS%2FNational+Reports%2FAnnual+Park+Ranking+Report+%281979+-+Last+Calendar+Year%29" target="_blank" rel="noreferrer">
+              NPS IRMA annual 2024 visitation ranking report
+            </a>
+            <a href="https://www.nps.gov/yose/learn/management/statistics.htm" target="_blank" rel="noreferrer">
+              Yosemite park statistics
+            </a>
+            <a href="https://www.nps.gov/yose/" target="_blank" rel="noreferrer">
+              Yosemite park homepage
+            </a>
+            <a href="https://www.nps.gov/olympic/" target="_blank" rel="noreferrer">
+              Olympic park homepage
+            </a>
+            <a href="https://home.nps.gov/im/nccn/olym.htm" target="_blank" rel="noreferrer">
+              Olympic inventory and monitoring overview
+            </a>
+            <a href="https://www.nps.gov/jotr/learn/management/statistics.htm" target="_blank" rel="noreferrer">
+              Joshua Tree park statistics
+            </a>
+            <a href="https://www.nps.gov/jotr/" target="_blank" rel="noreferrer">
+              Joshua Tree park homepage
+            </a>
+            <a href="https://www.nps.gov/im/nccn/mora.htm" target="_blank" rel="noreferrer">
+              Mount Rainier inventory and monitoring overview
+            </a>
+            <a href="https://www.nps.gov/mora/planyourvisit/placestogo.htm" target="_blank" rel="noreferrer">
+              Mount Rainier park size overview
+            </a>
+            <a href="https://www.nps.gov/articles/nps-geodiversity-atlas-redwood-national-park-and-state-parks-california.htm" target="_blank" rel="noreferrer">
+              Redwood National and State Parks geodiversity atlas
+            </a>
+            <a href="https://www.nps.gov/articles/nps-geodiversity-atlas-crater-lake-national-park.htm" target="_blank" rel="noreferrer">
+              Crater Lake geodiversity atlas
+            </a>
+            <a href="https://www.nps.gov/crla/" target="_blank" rel="noreferrer">
+              Crater Lake park homepage
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script defer src="./app.js"></script>
   </body>
 </html>

@@ -1,14 +1,22 @@
-# U.S. States Dashboard
+# West Coast National Parks
 
-Interactive single-page dashboard for all 50 U.S. states with:
-- Population
-- Land area
-- Total area
-- Population density
-- Animated bars and sortable/filterable table
-- State flags
+Standalone single-page website focused on West Coast U.S. national parks, built with:
+- semantic HTML
+- modern responsive CSS
+- a small TypeScript module for tabbed comparisons
 
-Data source: U.S. Census Bureau TIGERweb (`POP100`, `AREALAND`, `AREAWATER`).
+The page compares six parks using official National Park Service data:
+- 2024 recreation visits
+- acreage
+- establishment year
+- selected park facts
+
+## Files
+
+- `index.html` renders the page structure
+- `styles.css` contains the visual system and responsive layout
+- `app.ts` is the TypeScript source for the interactive comparison tabs
+- `app.js` is the browser-ready module loaded by the page
 
 ## Run locally
 
@@ -17,21 +25,12 @@ cd "/Users/anna/Documents/New project"
 python3 -m http.server 8080
 ```
 
-Open: `http://localhost:8080/index.html`
+Open [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
-## Publish as shareable animated website (GitHub Pages)
+## Data sources
 
-This repo includes a GitHub Actions workflow that deploys `index.html` to GitHub Pages from the `main` branch.
-
-After pushing to GitHub:
-1. Open repository `Settings` -> `Pages`
-2. Under `Build and deployment`, set `Source` to `GitHub Actions`
-3. Push to `main` (or re-run workflow)
-
-Your live URL will be:
-- `https://gannac.github.io/orchard/`
-
-## Notes
-
-- Open the live URL (not the raw GitHub file view) to preserve JavaScript and animations.
-- If updates do not appear immediately, hard refresh your browser.
+The page links directly to official NPS sources in its Sources section, including:
+- NPS IRMA annual park visitation report for 2024
+- park homepages
+- park statistics pages
+- NPS inventory and geodiversity references
